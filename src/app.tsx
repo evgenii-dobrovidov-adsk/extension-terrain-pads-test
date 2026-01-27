@@ -26,12 +26,17 @@ function generateRandomPad(bbox: Bbox): TerrainPadInput {
   const zRange = bbox.max.z - bbox.min.z;
 
   // Random center point within bounds (with margin)
-  const centerX = bbox.min.x + xRange * margin + Math.random() * xRange * (1 - 2 * margin);
-  const centerY = bbox.min.y + yRange * margin + Math.random() * yRange * (1 - 2 * margin);
+  const centerX =
+    bbox.min.x + xRange * margin + Math.random() * xRange * (1 - 2 * margin);
+  const centerY =
+    bbox.min.y + yRange * margin + Math.random() * yRange * (1 - 2 * margin);
 
   // Random size: 10-50 meters (clamped to fit within terrain)
   const maxSize = Math.min(xRange, yRange) * 0.2; // Max 20% of terrain size
-  const size = Math.max(10, Math.min(50, maxSize * (0.2 + Math.random() * 0.8)));
+  const size = Math.max(
+    10,
+    Math.min(50, maxSize * (0.2 + Math.random() * 0.8)),
+  );
   const halfSize = size / 2;
 
   // Random elevation within terrain z range
@@ -39,6 +44,14 @@ function generateRandomPad(bbox: Bbox): TerrainPadInput {
 
   // Random slope percentage: integer between 20 and 200
   const slopePercentage = Math.floor(10 + Math.random() * 100);
+
+  const applyGrade = Math.random() < 0.5;
+
+  const rest:
+    | { applyGrade: true; slopePercentage: number }
+    | { applyGrade: false } = applyGrade
+    ? { applyGrade: true, slopePercentage }
+    : { applyGrade: false };
 
   return {
     id: generateRandomId(),
@@ -49,8 +62,7 @@ function generateRandomPad(bbox: Bbox): TerrainPadInput {
       { x: centerX - halfSize, y: centerY + halfSize },
     ],
     elevation,
-    slopePercentage,
-    applyGrade: true,
+    ...rest,
   };
 }
 
@@ -63,18 +75,20 @@ export function App() {
     try {
       setStatus("Getting terrain bounds...");
       const bbox = await Forma.terrain.getBbox();
-      
+
       setStatus("Generating random pad...");
       const pad = generateRandomPad(bbox);
-      
+
       setStatus("Adding pad...");
       await Forma.terrain.addPads([pad]);
-      
+
       // Update pad count
       const pads = await Forma.terrain.getPads();
       setPadCount(pads.length);
-      
-      setStatus(`Created pad "${pad.id}" at elevation ${pad.elevation.toFixed(1)}m`);
+
+      setStatus(
+        `Created pad "${pad.id}" at elevation ${pad.elevation.toFixed(1)}m`,
+      );
       console.log("Created pad:", pad);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -103,18 +117,18 @@ export function App() {
     try {
       setStatus("Getting terrain bounds...");
       const bbox = await Forma.terrain.getBbox();
-      
+
       setStatus("Generating random pads...");
       const pads = [
         generateRandomPad(bbox),
         generateRandomPad(bbox),
         generateRandomPad(bbox),
       ];
-      
+
       setStatus("Setting pads...");
       await Forma.terrain.applyPads(pads);
       setPadCount(pads.length);
-      
+
       setStatus(`Set ${pads.length} new pads`);
       console.log("Set pads:", pads);
     } catch (error) {
@@ -130,10 +144,10 @@ export function App() {
       setStatus("Getting pads...");
       const pads = await Forma.terrain.getPads();
       setPadCount(pads.length);
-      
+
       setStatus(`Found ${pads.length} pad(s)`);
       console.log("Current pads:", pads);
-      
+
       // Log detailed info for each pad
       pads.forEach((pad, index) => {
         console.log(`Pad ${index + 1}:`, {
@@ -152,20 +166,27 @@ export function App() {
   };
 
   return (
-    <div style={{ padding: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div
+      style={{
+        padding: "12px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+      }}
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         <button onClick={handleCreatePad}>Create pad</button>
         <button onClick={handleDeletePads}>Delete all pads</button>
         <button onClick={handleSetPads}>Set 3 random pads</button>
         <button onClick={handleGetPads}>Get and log pads</button>
       </div>
-      
+
       {padCount !== null && (
         <div style={{ marginTop: "8px", fontSize: "14px" }}>
           <strong>Current pad count:</strong> {padCount}
         </div>
       )}
-      
+
       {status && (
         <div style={{ marginTop: "8px", fontSize: "12px", color: "#666" }}>
           {status}
