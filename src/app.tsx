@@ -47,12 +47,6 @@ function generateRandomPad(bbox: Bbox): TerrainPadInput {
 
   const applyGrade = Math.random() < 0.5;
 
-  const rest:
-    | { applyGrade: true; slopePercentage: number }
-    | { applyGrade: false } = applyGrade
-    ? { applyGrade: true, slopePercentage }
-    : { applyGrade: false };
-
   return {
     id: generateRandomId(),
     coordinates: [
@@ -62,7 +56,8 @@ function generateRandomPad(bbox: Bbox): TerrainPadInput {
       { x: centerX - halfSize, y: centerY + halfSize },
     ],
     elevation,
-    ...rest,
+    applyGrade,
+    slopePercentage,
   };
 }
 
@@ -156,6 +151,7 @@ export function App() {
           slopeAngle: pad.slopeAngle,
           slopePercentage: pad.slopePercentage,
           vertices: pad.coordinates.length,
+          applyGrade: pad.applyGrade,
         });
       });
     } catch (error) {
