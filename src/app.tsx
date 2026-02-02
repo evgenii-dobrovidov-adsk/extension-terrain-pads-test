@@ -1,7 +1,7 @@
 import { useState } from "preact/hooks";
 import "./app.css";
 import { Forma } from "forma-embedded-view-sdk/auto";
-import type { TerrainPadInput } from "forma-embedded-view-sdk/terrain";
+import type { TerrainPad } from "forma-embedded-view-sdk/terrain";
 
 // Type definitions based on the terrain API
 type Position = { x: number; y: number; z: number };
@@ -18,7 +18,7 @@ function generateRandomId(): string {
 }
 
 // Generate a random rectangular pad within the terrain bounds
-function generateRandomPad(bbox: Bbox): TerrainPadInput {
+function generateRandomPad(bbox: Bbox): TerrainPad {
   // Calculate terrain dimensions with some margin to keep pads inside
   const margin = 0.1; // 10% margin from edges
   const xRange = bbox.max.x - bbox.min.x;
@@ -45,7 +45,7 @@ function generateRandomPad(bbox: Bbox): TerrainPadInput {
   // Random slope percentage: integer between 20 and 200
   const slopePercentage = Math.floor(10 + Math.random() * 100);
 
-  const applyGrade = Math.random() < 0.5;
+  const applySlope = Math.random() < 0.5;
 
   return {
     id: generateRandomId(),
@@ -56,7 +56,7 @@ function generateRandomPad(bbox: Bbox): TerrainPadInput {
       { x: centerX - halfSize, y: centerY + halfSize },
     ],
     elevation,
-    applyGrade,
+    applySlope,
     slopePercentage,
   };
 }
@@ -151,7 +151,7 @@ export function App() {
           slopeAngle: pad.slopeAngle,
           slopePercentage: pad.slopePercentage,
           vertices: pad.coordinates.length,
-          applyGrade: pad.applyGrade,
+          applySlope: pad.applySlope,
         });
       });
     } catch (error) {
